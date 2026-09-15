@@ -11,6 +11,7 @@ module raytracer_top #(
     parameter int W               = 32,
     parameter int MAX_VAL         = 31,
     parameter int ADDR_BITS       = 15,
+    parameter int WORD_BITS       = 32,   // voxel RAM data width
     parameter int X_BITS          = 6,
     parameter int Y_BITS          = 6,
     parameter int Z_BITS          = 6,
@@ -19,33 +20,33 @@ module raytracer_top #(
     parameter int PIXEL_ID_WIDTH   = 14,
     parameter int RAY_ID_WIDTH     = 3
 )(
-    input  logic                          clk,
-    input  logic                          rst_n,
+    input  wire logic                     clk,
+    input  wire logic                     rst_n,
 
     // Ray-job input
-    input  logic                          job_valid,
+    input  wire logic                     job_valid,
     output logic                          job_ready,
-    input  logic [X_BITS-1:0]             job_ix0,
-    input  logic [Y_BITS-1:0]             job_iy0,
-    input  logic [Z_BITS-1:0]             job_iz0,
-    input  logic                          job_sx,
-    input  logic                          job_sy,
-    input  logic                          job_sz,
-    input  logic [W-1:0]                  job_next_x,
-    input  logic [W-1:0]                  job_next_y,
-    input  logic [W-1:0]                  job_next_z,
-    input  logic [W-1:0]                  job_inc_x,
-    input  logic [W-1:0]                  job_inc_y,
-    input  logic [W-1:0]                  job_inc_z,
-    input  logic [MAX_STEPS_BITS-1:0]     job_max_steps,
-    input  logic [PIXEL_ID_WIDTH-1:0]     job_pixel_id,
+    input  wire logic [X_BITS-1:0]        job_ix0,
+    input  wire logic [Y_BITS-1:0]        job_iy0,
+    input  wire logic [Z_BITS-1:0]        job_iz0,
+    input  wire logic                     job_sx,
+    input  wire logic                     job_sy,
+    input  wire logic                     job_sz,
+    input  wire logic [W-1:0]             job_next_x,
+    input  wire logic [W-1:0]             job_next_y,
+    input  wire logic [W-1:0]             job_next_z,
+    input  wire logic [W-1:0]             job_inc_x,
+    input  wire logic [W-1:0]             job_inc_y,
+    input  wire logic [W-1:0]             job_inc_z,
+    input  wire logic [MAX_STEPS_BITS-1:0] job_max_steps,
+    input  wire logic [PIXEL_ID_WIDTH-1:0] job_pixel_id,
 
     // Scene loading
-    input  logic                          load_mode,
-    input  logic                          load_valid,
+    input  wire logic                     load_mode,
+    input  wire logic                     load_valid,
     output logic                          load_ready,
-    input  logic [ADDR_BITS-1:0]          load_addr,
-    input  logic                          load_data,
+    input  wire logic [ADDR_BITS-$clog2(WORD_BITS)-1:0] load_addr,
+    input  wire logic [WORD_BITS-1:0]     load_data,
     output logic [ADDR_BITS:0]            write_count,
     output logic                          load_complete,
 
@@ -61,7 +62,7 @@ module raytracer_top #(
 
     // Streaming results for the interleaved ray engine
     output logic                          result_valid,
-    input  logic                          result_ready,
+    input  wire logic                     result_ready,
     output logic [PIXEL_ID_WIDTH-1:0]     result_pixel_id,
     output logic                          result_hit,
     output logic                          result_timeout,
@@ -182,7 +183,7 @@ module raytracer_top #(
 
     voxel_raytracer_core #(
         .W(W), .COORD_W(COORD_W), .MAX_VAL(MAX_VAL), .ADDR_BITS(ADDR_BITS),
-        .RAY_ID_WIDTH(RAY_ID_WIDTH)
+        .WORD_BITS(WORD_BITS), .RAY_ID_WIDTH(RAY_ID_WIDTH)
     ) u_core (
         .clk(clk), .rst_n(rst_n),
         .ix_in(current_ix), .iy_in(current_iy), .iz_in(current_iz),

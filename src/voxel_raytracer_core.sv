@@ -9,31 +9,32 @@ module voxel_raytracer_core #(
     parameter int COORD_W  = 6,
     parameter int MAX_VAL  = 31,
     parameter int ADDR_BITS = 15,
+    parameter int WORD_BITS = 32,      // voxel RAM data width
     parameter int RAY_ID_WIDTH = 3
 )(
-    input  logic                  clk,
-    input  logic                  rst_n,
+    input  wire logic             clk,
+    input  wire logic             rst_n,
 
-    input  logic [COORD_W-1:0]    ix_in,
-    input  logic [COORD_W-1:0]    iy_in,
-    input  logic [COORD_W-1:0]    iz_in,
-    input  logic                  sx_in,
-    input  logic                  sy_in,
-    input  logic                  sz_in,
-    input  logic [W-1:0]          next_x_in,
-    input  logic [W-1:0]          next_y_in,
-    input  logic [W-1:0]          next_z_in,
-    input  logic [W-1:0]          inc_x_in,
-    input  logic [W-1:0]          inc_y_in,
-    input  logic [W-1:0]          inc_z_in,
-    input  logic [RAY_ID_WIDTH-1:0] ray_id_in,
-    input  logic                  step_valid_in,
+    input  wire logic [COORD_W-1:0] ix_in,
+    input  wire logic [COORD_W-1:0] iy_in,
+    input  wire logic [COORD_W-1:0] iz_in,
+    input  wire logic             sx_in,
+    input  wire logic             sy_in,
+    input  wire logic             sz_in,
+    input  wire logic [W-1:0]     next_x_in,
+    input  wire logic [W-1:0]     next_y_in,
+    input  wire logic [W-1:0]     next_z_in,
+    input  wire logic [W-1:0]     inc_x_in,
+    input  wire logic [W-1:0]     inc_y_in,
+    input  wire logic [W-1:0]     inc_z_in,
+    input  wire logic [RAY_ID_WIDTH-1:0] ray_id_in,
+    input  wire logic             step_valid_in,
 
-    input  logic                  load_mode,
-    input  logic                  load_valid,
+    input  wire logic             load_mode,
+    input  wire logic             load_valid,
     output logic                  load_ready,
-    input  logic [ADDR_BITS-1:0]  load_addr,
-    input  logic                  load_data,
+    input  wire logic [ADDR_BITS-$clog2(WORD_BITS)-1:0] load_addr,
+    input  wire logic [WORD_BITS-1:0] load_data,
     output logic [ADDR_BITS:0]    write_count,
     output logic                  load_complete,
 
@@ -222,12 +223,16 @@ module voxel_raytracer_core #(
     // =========================================================
     // Stage 5: voxel_ram + scene_loader_if
     // =========================================================
-    logic                 voxel_occupied_s5;
-    logic                 we_ram;
-    logic [ADDR_BITS-1:0] waddr_ram;
-    logic                 wdata_ram;
+    localparam int RAM_WADDR_W = ADDR_BITS - $clog2(WORD_BITS);
 
-    scene_loader_if #(.ADDR_BITS(ADDR_BITS), .ENABLE_COUNTER(1'b1)) u_scene_loader (
+    logic                   voxel_occupied_s5;
+    logic                   we_ram;
+    logic [RAM_WADDR_W-1:0] waddr_ram;
+    logic [WORD_BITS-1:0]   wdata_ram;
+
+    scene_loader_if #(
+        .ADDR_BITS(ADDR_BITS), .WORD_BITS(WORD_BITS), .ENABLE_COUNTER(1'b1)
+    ) u_scene_loader (
         .clk(clk), .rst_n(rst_n),
         .load_mode(load_mode), .load_valid(load_valid),
         .load_ready(load_ready), .load_addr(load_addr), .load_data(load_data),
@@ -235,7 +240,10 @@ module voxel_raytracer_core #(
         .write_count(write_count), .load_complete(load_complete)
     );
 
-    voxel_ram #(.ADDR_BITS(ADDR_BITS), .SYNC_READ(1'b1), .WRITE_FIRST(1'b1)) u_voxel_ram (
+    voxel_ram #(
+        .ADDR_BITS(ADDR_BITS), .WORD_BITS(WORD_BITS),
+        .SYNC_READ(1'b1), .WRITE_FIRST(1'b1)
+    ) u_voxel_ram (
         .clk(clk), .rst_n(rst_n),
         .raddr(voxel_addr_s4),  .rdata(voxel_occupied_s5),
         .we(we_ram), .waddr(waddr_ram), .wdata(wdata_ram)

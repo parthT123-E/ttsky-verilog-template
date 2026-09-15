@@ -10,33 +10,33 @@ module ray_job_if #(
     parameter int W              = 24,
     parameter int MAX_STEPS_BITS = 10
 )(
-    input  logic                      clk,
-    input  logic                      rst_n,
+    input  wire logic                 clk,
+    input  wire logic                 rst_n,
 
-    input  logic                      load_mode,
+    input  wire logic                 load_mode,
 
-    input  logic                      job_valid,
+    input  wire logic                 job_valid,
     output logic                      job_ready,
 
-    input  logic [X_BITS-1:0]         ix0,
-    input  logic [Y_BITS-1:0]         iy0,
-    input  logic [Z_BITS-1:0]         iz0,
+    input  wire logic [X_BITS-1:0]    ix0,
+    input  wire logic [Y_BITS-1:0]    iy0,
+    input  wire logic [Z_BITS-1:0]    iz0,
 
-    input  logic                      sx,
-    input  logic                      sy,
-    input  logic                      sz,
+    input  wire logic                 sx,
+    input  wire logic                 sy,
+    input  wire logic                 sz,
 
-    input  logic [W-1:0]              next_x,
-    input  logic [W-1:0]              next_y,
-    input  logic [W-1:0]              next_z,
+    input  wire logic [W-1:0]         next_x,
+    input  wire logic [W-1:0]         next_y,
+    input  wire logic [W-1:0]         next_z,
 
-    input  logic [W-1:0]              inc_x,
-    input  logic [W-1:0]              inc_y,
-    input  logic [W-1:0]              inc_z,
+    input  wire logic [W-1:0]         inc_x,
+    input  wire logic [W-1:0]         inc_y,
+    input  wire logic [W-1:0]         inc_z,
 
-    input  logic [MAX_STEPS_BITS-1:0] max_steps,
+    input  wire logic [MAX_STEPS_BITS-1:0] max_steps,
 
-    input  logic                      job_done,
+    input  wire logic                 job_done,
 
     output logic                      job_loaded,
     output logic                      job_active,

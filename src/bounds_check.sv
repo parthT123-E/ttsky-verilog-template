@@ -7,9 +7,9 @@ module bounds_check #(
     parameter int COORD_W = 6,
     parameter int MAX_VAL = 31
 )(
-    input  logic [COORD_W-1:0] ix,
-    input  logic [COORD_W-1:0] iy,
-    input  logic [COORD_W-1:0] iz,
+    input  wire logic [COORD_W-1:0] ix,
+    input  wire logic [COORD_W-1:0] iy,
+    input  wire logic [COORD_W-1:0] iz,
     output logic               out_of_bounds
 );
 

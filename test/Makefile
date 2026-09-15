@@ -6,7 +6,7 @@ SIM ?= icarus
 FST ?= -fst # Use more efficient FST format
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = axis_choose.sv bounds_check.sv raytracer_host_regs.sv raytracer_top.sv scene_loader_if.sv step_control_multi.sv step_update.sv tt_um_ttsky_asic_raytracer.sv voxel_addr_map.sv voxel_ram.sv voxel_raytracer_core.sv
+PROJECT_SOURCES = qspi_stream_raytracer.sv tt_um_ttsky_asic_raytracer.sv
 
 ifneq ($(GATES),yes)
 

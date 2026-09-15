@@ -8,9 +8,9 @@
 module axis_choose #(
     parameter int W = 32
 )(
-    input  logic [W-1:0] a,
-    input  logic [W-1:0] b,
-    input  logic [W-1:0] c,
+    input  wire logic [W-1:0] a,
+    input  wire logic [W-1:0] b,
+    input  wire logic [W-1:0] c,
     output logic [2:0]   step_mask,
     output logic [1:0]   primary_sel
 );

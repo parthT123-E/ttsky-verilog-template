@@ -8,11 +8,11 @@
 //   - New start accepted only when not active (cnt==0).
 // =============================================================================
 module tt_div32 (
-    input  logic        clk,
-    input  logic        rst_n,
-    input  logic        start,
-    input  logic [31:0] num,
-    input  logic [15:0] den,
+    input  wire logic        clk,
+    input  wire logic        rst_n,
+    input  wire logic        start,
+    input  wire logic [31:0] num,
+    input  wire logic [15:0] den,
     output logic [31:0] quot,
     output logic        valid,
     output logic        div_by_zero

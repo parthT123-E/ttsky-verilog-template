@@ -15,42 +15,42 @@ module step_control_multi #(
     parameter int NUM_CONTEXTS     = 5,
     parameter int RESULT_DEPTH     = 8
 )(
-    input  logic                          clock,
-    input  logic                          reset,
+    input  wire logic                     clock,
+    input  wire logic                     reset,
 
-    input  logic                          load_mode,
+    input  wire logic                     load_mode,
 
-    input  logic                          job_valid,
+    input  wire logic                     job_valid,
     output logic                          job_ready,
-    input  logic [PIXEL_ID_WIDTH-1:0]     job_pixel_id,
-    input  logic [X_BITS-1:0]             job_init_x,
-    input  logic [Y_BITS-1:0]             job_init_y,
-    input  logic [Z_BITS-1:0]             job_init_z,
-    input  logic                          job_sx,
-    input  logic                          job_sy,
-    input  logic                          job_sz,
-    input  logic [TIMER_WIDTH-1:0]        job_timer_x,
-    input  logic [TIMER_WIDTH-1:0]        job_timer_y,
-    input  logic [TIMER_WIDTH-1:0]        job_timer_z,
-    input  logic [TIMER_WIDTH-1:0]        job_inc_x,
-    input  logic [TIMER_WIDTH-1:0]        job_inc_y,
-    input  logic [TIMER_WIDTH-1:0]        job_inc_z,
-    input  logic [STEP_COUNT_WIDTH-1:0]   max_steps,
+    input  wire logic [PIXEL_ID_WIDTH-1:0] job_pixel_id,
+    input  wire logic [X_BITS-1:0]        job_init_x,
+    input  wire logic [Y_BITS-1:0]        job_init_y,
+    input  wire logic [Z_BITS-1:0]        job_init_z,
+    input  wire logic                     job_sx,
+    input  wire logic                     job_sy,
+    input  wire logic                     job_sz,
+    input  wire logic [TIMER_WIDTH-1:0]   job_timer_x,
+    input  wire logic [TIMER_WIDTH-1:0]   job_timer_y,
+    input  wire logic [TIMER_WIDTH-1:0]   job_timer_z,
+    input  wire logic [TIMER_WIDTH-1:0]   job_inc_x,
+    input  wire logic [TIMER_WIDTH-1:0]   job_inc_y,
+    input  wire logic [TIMER_WIDTH-1:0]   job_inc_z,
+    input  wire logic [STEP_COUNT_WIDTH-1:0] max_steps,
 
-    input  logic                          pipeline_valid,
-    input  logic [RAY_ID_WIDTH-1:0]       pipeline_ray_id,
-    input  logic                          solid_bit,
-    input  logic                          out_of_bounds,
-    input  logic [X_BITS-1:0]             pipeline_curr_x,
-    input  logic [Y_BITS-1:0]             pipeline_curr_y,
-    input  logic [Z_BITS-1:0]             pipeline_curr_z,
-    input  logic [X_BITS-1:0]             pipeline_next_x,
-    input  logic [Y_BITS-1:0]             pipeline_next_y,
-    input  logic [Z_BITS-1:0]             pipeline_next_z,
-    input  logic [TIMER_WIDTH-1:0]        pipeline_next_timer_x,
-    input  logic [TIMER_WIDTH-1:0]        pipeline_next_timer_y,
-    input  logic [TIMER_WIDTH-1:0]        pipeline_next_timer_z,
-    input  logic [2:0]                    pipeline_face_id,
+    input  wire logic                     pipeline_valid,
+    input  wire logic [RAY_ID_WIDTH-1:0]  pipeline_ray_id,
+    input  wire logic                     solid_bit,
+    input  wire logic                     out_of_bounds,
+    input  wire logic [X_BITS-1:0]        pipeline_curr_x,
+    input  wire logic [Y_BITS-1:0]        pipeline_curr_y,
+    input  wire logic [Z_BITS-1:0]        pipeline_curr_z,
+    input  wire logic [X_BITS-1:0]        pipeline_next_x,
+    input  wire logic [Y_BITS-1:0]        pipeline_next_y,
+    input  wire logic [Z_BITS-1:0]        pipeline_next_z,
+    input  wire logic [TIMER_WIDTH-1:0]   pipeline_next_timer_x,
+    input  wire logic [TIMER_WIDTH-1:0]   pipeline_next_timer_y,
+    input  wire logic [TIMER_WIDTH-1:0]   pipeline_next_timer_z,
+    input  wire logic [2:0]               pipeline_face_id,
 
     output logic                          issue_valid,
     output logic [RAY_ID_WIDTH-1:0]       issue_ray_id,
@@ -68,7 +68,7 @@ module step_control_multi #(
     output logic [TIMER_WIDTH-1:0]        issue_inc_z,
 
     output logic                          result_valid,
-    input  logic                          result_ready,
+    input  wire logic                     result_ready,
     output logic [PIXEL_ID_WIDTH-1:0]     result_pixel_id,
     output logic                          result_hit,
     output logic                          result_timeout,
@@ -110,6 +110,7 @@ module step_control_multi #(
     logic [X_BITS-1:0]           pend_hit_x [0:NUM_CONTEXTS-1];
     logic [Y_BITS-1:0]           pend_hit_y [0:NUM_CONTEXTS-1];
     logic [Z_BITS-1:0]           pend_hit_z [0:NUM_CONTEXTS-1];
+    logic [2:0]                  pend_face [0:NUM_CONTEXTS-1];
 
     logic [CTX_W-1:0] issue_ptr;
     logic [CTX_W-1:0] free_idx;
@@ -138,6 +139,8 @@ module step_control_multi #(
     assign result_hit_x    = fifo_hit_x[fifo_rd_ptr];
     assign result_hit_y    = fifo_hit_y[fifo_rd_ptr];
     assign result_hit_z    = fifo_hit_z[fifo_rd_ptr];
+    // result_face_id is 0..5 (a real face) or 3'd6 -- sentinel meaning the
+    // ray hit its starting voxel with no traversal, so no entry face exists.
     assign result_face_id  = fifo_face[fifo_rd_ptr];
     assign result_steps    = fifo_steps[fifo_rd_ptr];
 
@@ -193,13 +196,14 @@ module step_control_multi #(
                 timer_x[i] <= '0; timer_y[i] <= '0; timer_z[i] <= '0;
                 inc_x[i] <= '0; inc_y[i] <= '0; inc_z[i] <= '0;
                 step_ctr[i] <= '0; max_steps_reg[i] <= '0; pixel_id[i] <= '0;
-                face_reg[i] <= '0;
+                face_reg[i] <= 3'd6;
                 sx_reg[i] <= 1'b0; sy_reg[i] <= 1'b0; sz_reg[i] <= 1'b0;
                 ctx_active[i] <= 1'b0;
                 ctx_in_pipe[i] <= 1'b0;
                 ctx_pending[i] <= 1'b0;
                 pend_hit[i] <= 1'b0; pend_timeout[i] <= 1'b0;
                 pend_hit_x[i] <= '0; pend_hit_y[i] <= '0; pend_hit_z[i] <= '0;
+                pend_face[i] <= 3'd6;
             end
         end else begin
             logic fifo_push;
@@ -209,6 +213,7 @@ module step_control_multi #(
             logic [X_BITS-1:0] push_hit_x;
             logic [Y_BITS-1:0] push_hit_y;
             logic [Z_BITS-1:0] push_hit_z;
+            logic [2:0] push_face;
             logic [STEP_COUNT_WIDTH-1:0] next_step;
             logic finish_now;
 
@@ -219,6 +224,7 @@ module step_control_multi #(
             push_hit_x   = '0;
             push_hit_y   = '0;
             push_hit_z   = '0;
+            push_face    = 3'd6;
 
             if (issue_ptr == (NUM_CONTEXTS-1))
                 issue_ptr <= '0;
@@ -245,7 +251,9 @@ module step_control_multi #(
                 max_steps_reg[free_idx] <= max_steps;
                 step_ctr[free_idx] <= '0;
                 pixel_id[free_idx] <= job_pixel_id;
-                face_reg[free_idx] <= '0;
+                // Sentinel: no voxel has been entered yet, so if this ray
+                // hits its own starting voxel there is no entry face.
+                face_reg[free_idx] <= 3'd6;
             end
 
             if (pipeline_valid) begin
@@ -255,6 +263,14 @@ module step_control_multi #(
                              (next_step >= max_steps_reg[pipeline_ray_id[CTX_W-1:0]]);
 
                 if (finish_now) begin
+                    // pipeline_face_id here describes the step OUT of the
+                    // voxel under test (into whatever voxel comes next) --
+                    // that step is never taken because the ray terminates
+                    // this pass. The face the ray actually entered THIS
+                    // (hit) voxel through is whatever the previous,
+                    // non-terminating pass latched into face_reg below, so
+                    // that old value -- not pipeline_face_id -- is the
+                    // correct entry face to report.
                     ctx_active[pipeline_ray_id[CTX_W-1:0]] <= 1'b0;
                     ctx_pending[pipeline_ray_id[CTX_W-1:0]] <= 1'b1;
                     pend_hit[pipeline_ray_id[CTX_W-1:0]] <= solid_bit;
@@ -262,8 +278,8 @@ module step_control_multi #(
                     pend_hit_x[pipeline_ray_id[CTX_W-1:0]] <= pipeline_curr_x;
                     pend_hit_y[pipeline_ray_id[CTX_W-1:0]] <= pipeline_curr_y;
                     pend_hit_z[pipeline_ray_id[CTX_W-1:0]] <= pipeline_curr_z;
+                    pend_face[pipeline_ray_id[CTX_W-1:0]] <= face_reg[pipeline_ray_id[CTX_W-1:0]];
                     step_ctr[pipeline_ray_id[CTX_W-1:0]] <= next_step;
-                    face_reg[pipeline_ray_id[CTX_W-1:0]] <= pipeline_face_id;
                 end else begin
                     voxel_x[pipeline_ray_id[CTX_W-1:0]] <= pipeline_next_x;
                     voxel_y[pipeline_ray_id[CTX_W-1:0]] <= pipeline_next_y;
@@ -272,6 +288,9 @@ module step_control_multi #(
                     timer_y[pipeline_ray_id[CTX_W-1:0]] <= pipeline_next_timer_y;
                     timer_z[pipeline_ray_id[CTX_W-1:0]] <= pipeline_next_timer_z;
                     step_ctr[pipeline_ray_id[CTX_W-1:0]] <= next_step;
+                    // Latch the face this step crosses INTO. If the next
+                    // voxel tested turns out solid, this value becomes its
+                    // (correct) entry face above.
                     face_reg[pipeline_ray_id[CTX_W-1:0]] <= pipeline_face_id;
                 end
             end
@@ -285,6 +304,7 @@ module step_control_multi #(
                     push_hit_x = pend_hit_x[i];
                     push_hit_y = pend_hit_y[i];
                     push_hit_z = pend_hit_z[i];
+                    push_face = pend_face[i];
                 end
             end
 
@@ -295,7 +315,7 @@ module step_control_multi #(
                 fifo_hit_x[fifo_wr_ptr] <= push_hit_x;
                 fifo_hit_y[fifo_wr_ptr] <= push_hit_y;
                 fifo_hit_z[fifo_wr_ptr] <= push_hit_z;
-                fifo_face[fifo_wr_ptr] <= face_reg[push_ctx];
+                fifo_face[fifo_wr_ptr] <= push_face;
                 fifo_steps[fifo_wr_ptr] <= step_ctr[push_ctx];
                 fifo_wr_ptr <= fifo_wr_ptr + 1'b1;
                 ctx_pending[push_ctx] <= 1'b0;

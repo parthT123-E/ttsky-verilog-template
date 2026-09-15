@@ -1,5 +1,7 @@
 .DS_Store
 .idea
+.venv/
+fpga-venv/
 *.vcd
 *.fst
 *.fst.hier
@@ -11,3 +13,9 @@ test/sim_build
 test/__pycache__/
 test/results.xml
 test/gate_level_netlist.v
+
+# Icarus Verilog compiled testbenches
+build/
+
+# Python bytecode
+__pycache__/

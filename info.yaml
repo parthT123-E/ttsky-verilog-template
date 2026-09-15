@@ -3,12 +3,12 @@ project:
   title:        "ASIC Voxel Ray Tracer"      # Project title
   author:       "Parth"      # Your name
   discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  "A TinyTapeout-hosted voxel ray tracing accelerator with a byte-wide register interface."      # One line description of what your project does
+  description:  "A TinyTapeout-hosted voxel ray stepper with a streaming QSPI-style host interface."      # One line description of what your project does
   language:     "SystemVerilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz:     50000000       # Clock frequency in Hz (or 0 if not applicable)
+  clock_hz:     40000000       # Clock frequency in Hz (or 0 if not applicable)
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  tiles: "4x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
   top_module:  "tt_um_ttsky_asic_raytracer"
@@ -17,50 +17,41 @@ project:
   # Source files must be in ./src and you must list each source file separately, one per line.
   # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
   source_files:
-    - "axis_choose.sv"
-    - "bounds_check.sv"
-    - "raytracer_host_regs.sv"
-    - "raytracer_top.sv"
-    - "scene_loader_if.sv"
-    - "step_control_multi.sv"
-    - "step_update.sv"
+    - "qspi_stream_raytracer.sv"
     - "tt_um_ttsky_asic_raytracer.sv"
-    - "voxel_addr_map.sv"
-    - "voxel_ram.sv"
-    - "voxel_raytracer_core.sv"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
   # Inputs
-  ui[0]: "wr_data[0]"
-  ui[1]: "wr_data[1]"
-  ui[2]: "wr_data[2]"
-  ui[3]: "wr_data[3]"
-  ui[4]: "wr_data[4]"
-  ui[5]: "wr_data[5]"
-  ui[6]: "wr_data[6]"
-  ui[7]: "wr_data[7]"
+  ui[0]: "qspi_sck"
+  ui[1]: "qspi_cs_n"
+  ui[2]: ""
+  ui[3]: ""
+  ui[4]: ""
+  ui[5]: ""
+  ui[6]: ""
+  ui[7]: ""
 
   # Outputs
-  uo[0]: "rd_data[0]"
-  uo[1]: "rd_data[1]"
-  uo[2]: "rd_data[2]"
-  uo[3]: "rd_data[3]"
-  uo[4]: "rd_data[4]"
-  uo[5]: "rd_data[5]"
-  uo[6]: "rd_data[6]"
-  uo[7]: "rd_data[7]"
+  uo[0]: "active"
+  uo[1]: "needs_voxel"
+  uo[2]: "result_valid"
+  uo[3]: "result_hit"
+  uo[4]: "result_timeout"
+  uo[5]: "busy"
+  uo[6]: "qspi_driving"
+  uo[7]: ""
 
   # Bidirectional pins
-  uio[0]: "reg_addr[0]"
-  uio[1]: "reg_addr[1]"
-  uio[2]: "reg_addr[2]"
-  uio[3]: "reg_addr[3]"
-  uio[4]: "reg_addr[4]"
-  uio[5]: "reg_addr[5]"
-  uio[6]: "wr_stb"
-  uio[7]: "rd_stb"
+  uio[0]: "qspi_dq[0]"
+  uio[1]: "qspi_dq[1]"
+  uio[2]: "qspi_dq[2]"
+  uio[3]: "qspi_dq[3]"
+  uio[4]: ""
+  uio[5]: ""
+  uio[6]: ""
+  uio[7]: ""
 
 # Do not change!
 yaml_version: 6

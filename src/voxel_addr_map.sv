@@ -9,9 +9,9 @@ module voxel_addr_map #(
     parameter int Z_BITS = 5,
     parameter bit MAP_ZYX = 1'b1
 )(
-    input  logic [X_BITS-1:0] x,
-    input  logic [Y_BITS-1:0] y,
-    input  logic [Z_BITS-1:0] z,
+    input  wire logic [X_BITS-1:0] x,
+    input  wire logic [Y_BITS-1:0] y,
+    input  wire logic [Z_BITS-1:0] z,
     output logic [X_BITS+Y_BITS+Z_BITS-1:0] addr
 );
 

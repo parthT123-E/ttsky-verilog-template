@@ -9,11 +9,11 @@
 //   full                : guard against overflow
 // =============================================================================
 module tt_tx_fifo (
-    input  logic       clk,
-    input  logic       rst_n,
-    input  logic       push_en,
-    input  logic [7:0] push_data,
-    input  logic       pop_en,
+    input  wire logic       clk,
+    input  wire logic       rst_n,
+    input  wire logic       push_en,
+    input  wire logic [7:0] push_data,
+    input  wire logic       pop_en,
     output logic [7:0] rdata,
     output logic       empty,
     output logic       full

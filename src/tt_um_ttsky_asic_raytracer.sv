@@ -2,7 +2,7 @@
 // TinyTapeout submission wrapper for the ASIC voxel ray tracer.
 //
 // This is the template-facing top module. It keeps the TinyTapeout pin contract
-// at the boundary and delegates the host register protocol to the project
+// at the boundary and delegates the streaming QSPI protocol to the project
 // implementation wrapper.
 // =============================================================================
 `default_nettype none
@@ -22,7 +22,7 @@ module tt_um_ttsky_asic_raytracer (
     wire [7:0] core_uio_out;
     wire [7:0] core_uio_oe;
 
-    raytracer_host_regs u_project (
+    qspi_stream_raytracer u_project (
         .ui_in(ui_in),
         .uo_out(core_uo_out),
         .uio_in(uio_in),
